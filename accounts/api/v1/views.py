@@ -1,4 +1,3 @@
-
 import secrets
 from datetime import timedelta
 
@@ -34,9 +33,7 @@ def send_verification_code(user, verification):
     code = f"{secrets.randbelow(1_000_000):06d}"
 
     verification.otp_hash = make_password(code)
-    verification.expires_at = timezone.now() + timedelta(
-        minutes=OTP_EXPIRY_MINUTES
-    )
+    verification.expires_at = timezone.now() + timedelta(minutes=OTP_EXPIRY_MINUTES)
     verification.last_sent_at = timezone.now()
     verification.attempts = 0
     verification.save()
@@ -92,10 +89,7 @@ class RegisterAPIView(APIView):
 
         return Response(
             {
-                "detail": (
-                    "Registration successful. "
-                    "Check your email for the OTP."
-                ),
+                "detail": ("Registration successful. " "Check your email for the OTP."),
                 "email": user.email,
             },
             status=status.HTTP_201_CREATED,
@@ -160,12 +154,7 @@ class VerifyEmailAPIView(APIView):
             verification.delete()
 
         return Response(
-            {
-                "detail": (
-                    "Email verified successfully. "
-                    "You can now log in."
-                )
-            },
+            {"detail": ("Email verified successfully. " "You can now log in.")},
             status=status.HTTP_200_OK,
         )
 
@@ -189,23 +178,13 @@ class ResendOTPAPIView(APIView):
             user = User.objects.get(email__iexact=email)
         except User.DoesNotExist:
             return Response(
-                {
-                    "detail": (
-                        "If the account is eligible, "
-                        "a code will be sent."
-                    )
-                },
+                {"detail": ("If the account is eligible, " "a code will be sent.")},
                 status=status.HTTP_200_OK,
             )
 
         if user.is_active:
             return Response(
-                {
-                    "detail": (
-                        "If the account is eligible, "
-                        "a code will be sent."
-                    )
-                },
+                {"detail": ("If the account is eligible, " "a code will be sent.")},
                 status=status.HTTP_200_OK,
             )
 
@@ -217,9 +196,7 @@ class ResendOTPAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        elapsed = (
-            timezone.now() - verification.last_sent_at
-        ).total_seconds()
+        elapsed = (timezone.now() - verification.last_sent_at).total_seconds()
 
         if elapsed < OTP_RESEND_COOLDOWN_SECONDS:
             return Response(
@@ -236,12 +213,7 @@ class ResendOTPAPIView(APIView):
             )
 
         return Response(
-            {
-                "detail": (
-                    "If the account is eligible, "
-                    "a code will be sent."
-                )
-            },
+            {"detail": ("If the account is eligible, " "a code will be sent.")},
             status=status.HTTP_200_OK,
         )
 
