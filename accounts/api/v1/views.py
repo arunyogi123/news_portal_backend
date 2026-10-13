@@ -1,3 +1,4 @@
+
 import secrets
 from datetime import timedelta
 
@@ -7,6 +8,7 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.utils import timezone
 
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -28,10 +30,13 @@ OTP_MAX_ATTEMPTS = 5
 
 
 def send_verification_code(user, verification):
+    """Generate, hash, store, and send a six-digit OTP."""
     code = f"{secrets.randbelow(1_000_000):06d}"
 
     verification.otp_hash = make_password(code)
-    verification.expires_at = timezone.now() + timedelta(minutes=OTP_EXPIRY_MINUTES)
+    verification.expires_at = timezone.now() + timedelta(
+        minutes=OTP_EXPIRY_MINUTES
+    )
     verification.last_sent_at = timezone.now()
     verification.attempts = 0
     verification.save()
@@ -52,9 +57,15 @@ def send_verification_code(user, verification):
 
 class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
+    serializer_class = RegisterSerializer
 
+    @extend_schema(
+        request=RegisterSerializer,
+        responses={201: RegisterSerializer},
+        description="Register a new user and generate an email OTP.",
+    )
     def post(self, request):
-        serializer = RegisterSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         user = serializer.save()
@@ -81,7 +92,10 @@ class RegisterAPIView(APIView):
 
         return Response(
             {
-                "detail": "Registration successful. Check your email for the OTP.",
+                "detail": (
+                    "Registration successful. "
+                    "Check your email for the OTP."
+                ),
                 "email": user.email,
             },
             status=status.HTTP_201_CREATED,
@@ -90,9 +104,15 @@ class RegisterAPIView(APIView):
 
 class VerifyEmailAPIView(APIView):
     permission_classes = [AllowAny]
+    serializer_class = VerifyEmailSerializer
 
+    @extend_schema(
+        request=VerifyEmailSerializer,
+        responses={200: dict},
+        description="Verify the email using a six-digit OTP.",
+    )
     def post(self, request):
-        serializer = VerifyEmailSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         email = serializer.validated_data["email"].strip().lower()
@@ -140,16 +160,27 @@ class VerifyEmailAPIView(APIView):
             verification.delete()
 
         return Response(
-            {"detail": "Email verified successfully. You can now log in."},
+            {
+                "detail": (
+                    "Email verified successfully. "
+                    "You can now log in."
+                )
+            },
             status=status.HTTP_200_OK,
         )
 
 
 class ResendOTPAPIView(APIView):
     permission_classes = [AllowAny]
+    serializer_class = ResendOTPSerializer
 
+    @extend_schema(
+        request=ResendOTPSerializer,
+        responses={200: dict, 400: dict, 429: dict, 503: dict},
+        description="Request a replacement email verification OTP.",
+    )
     def post(self, request):
-        serializer = ResendOTPSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         email = serializer.validated_data["email"].strip().lower()
@@ -158,12 +189,24 @@ class ResendOTPAPIView(APIView):
             user = User.objects.get(email__iexact=email)
         except User.DoesNotExist:
             return Response(
-                {"detail": "If the account is eligible, a code will be sent."}
+                {
+                    "detail": (
+                        "If the account is eligible, "
+                        "a code will be sent."
+                    )
+                },
+                status=status.HTTP_200_OK,
             )
 
         if user.is_active:
             return Response(
-                {"detail": "If the account is eligible, a code will be sent."}
+                {
+                    "detail": (
+                        "If the account is eligible, "
+                        "a code will be sent."
+                    )
+                },
+                status=status.HTTP_200_OK,
             )
 
         try:
@@ -174,7 +217,9 @@ class ResendOTPAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        elapsed = (timezone.now() - verification.last_sent_at).total_seconds()
+        elapsed = (
+            timezone.now() - verification.last_sent_at
+        ).total_seconds()
 
         if elapsed < OTP_RESEND_COOLDOWN_SECONDS:
             return Response(
@@ -190,7 +235,15 @@ class ResendOTPAPIView(APIView):
                 status=status.HTTP_503_SERVICE_UNAVAILABLE,
             )
 
-        return Response({"detail": "If the account is eligible, a code will be sent."})
+        return Response(
+            {
+                "detail": (
+                    "If the account is eligible, "
+                    "a code will be sent."
+                )
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class UserProfileAPIView(generics.RetrieveUpdateAPIView):
