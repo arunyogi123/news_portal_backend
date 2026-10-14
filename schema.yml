@@ -4,6 +4,36 @@ info:
   version: 1.0.0
   description: 'swagger testing '
 paths:
+  /api/accounts/forgot-password/:
+    post:
+      operationId: accounts_forgot_password_create
+      description: Request a password-reset code. The response does not reveal whether
+        the email is registered.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ForgotPassword'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ForgotPassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ForgotPassword'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
   /api/accounts/me/:
     get:
       operationId: accounts_me_retrieve
@@ -69,7 +99,7 @@ paths:
   /api/accounts/register/:
     post:
       operationId: accounts_register_create
-      description: Register a new user and generate an email OTP.
+      description: Register a user and send an email-verification OTP.
       tags:
       - accounts
       requestBody:
@@ -92,12 +122,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Register'
+                type: object
+                additionalProperties: {}
           description: ''
   /api/accounts/resend-otp/:
     post:
       operationId: accounts_resend_otp_create
-      description: Request a replacement email verification OTP.
+      description: Request a replacement email-verification OTP.
       tags:
       - accounts
       requestBody:
@@ -144,6 +175,42 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /api/accounts/reset-password/:
+    post:
+      operationId: accounts_reset_password_create
+      description: Set a new password using the short-lived reset token.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPassword'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResetPassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResetPassword'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
   /api/accounts/verify-email/:
     post:
       operationId: accounts_verify_email_create
@@ -167,6 +234,49 @@ paths:
       - {}
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/accounts/verify-reset-otp/:
+    post:
+      operationId: accounts_verify_reset_otp_create
+      description: Verify the password-reset OTP and return a short-lived reset token.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyPasswordResetOTP'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyPasswordResetOTP'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyPasswordResetOTP'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '429':
           content:
             application/json:
               schema:
@@ -760,6 +870,14 @@ components:
       - id
       - name
       - slug
+    ForgotPassword:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
     PatchedArticle:
       type: object
       properties:
@@ -902,6 +1020,27 @@ components:
           format: email
       required:
       - email
+    ResetPassword:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        reset_token:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        password_confirm:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - password
+      - password_confirm
+      - reset_token
     TokenObtainPair:
       type: object
       properties:
@@ -968,6 +1107,18 @@ components:
       - id
       - username
     VerifyEmail:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        code:
+          type: string
+          pattern: ^\d{6}$
+      required:
+      - code
+      - email
+    VerifyPasswordResetOTP:
       type: object
       properties:
         email:
