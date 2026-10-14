@@ -1,4 +1,3 @@
-
 import secrets
 from datetime import timedelta
 
@@ -38,9 +37,7 @@ def send_verification_code(user, verification):
     code = f"{secrets.randbelow(1_000_000):06d}"
 
     verification.otp_hash = make_password(code)
-    verification.expires_at = timezone.now() + timedelta(
-        minutes=OTP_EXPIRY_MINUTES
-    )
+    verification.expires_at = timezone.now() + timedelta(minutes=OTP_EXPIRY_MINUTES)
     verification.last_sent_at = timezone.now()
     verification.attempts = 0
     verification.save()
@@ -64,9 +61,7 @@ def send_password_reset_code(user, reset):
     code = f"{secrets.randbelow(1_000_000):06d}"
 
     reset.otp_hash = make_password(code)
-    reset.expires_at = timezone.now() + timedelta(
-        minutes=OTP_EXPIRY_MINUTES
-    )
+    reset.expires_at = timezone.now() + timedelta(minutes=OTP_EXPIRY_MINUTES)
     reset.last_sent_at = timezone.now()
     reset.attempts = 0
     reset.reset_token_hash = ""
@@ -123,9 +118,7 @@ class RegisterAPIView(APIView):
 
         return Response(
             {
-                "detail": (
-                    "Registration successful. Check your email for the OTP."
-                ),
+                "detail": ("Registration successful. Check your email for the OTP."),
                 "email": user.email,
             },
             status=status.HTTP_201_CREATED,
@@ -231,9 +224,7 @@ class ResendOTPAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        elapsed = (
-            timezone.now() - verification.last_sent_at
-        ).total_seconds()
+        elapsed = (timezone.now() - verification.last_sent_at).total_seconds()
 
         if elapsed < OTP_RESEND_COOLDOWN_SECONDS:
             return Response(
@@ -274,8 +265,7 @@ class ForgotPasswordAPIView(APIView):
 
         generic_response = {
             "detail": (
-                "If an eligible account exists, a password-reset code "
-                "will be sent."
+                "If an eligible account exists, a password-reset code " "will be sent."
             )
         }
 
@@ -293,9 +283,7 @@ class ForgotPasswordAPIView(APIView):
             },
         )
 
-        elapsed = (
-            timezone.now() - reset.last_sent_at
-        ).total_seconds()
+        elapsed = (timezone.now() - reset.last_sent_at).total_seconds()
 
         if reset.expires_at > timezone.now() and elapsed < OTP_RESEND_COOLDOWN_SECONDS:
             return Response(generic_response, status=status.HTTP_200_OK)
@@ -319,8 +307,7 @@ class VerifyPasswordResetOTPAPIView(APIView):
         request=VerifyPasswordResetOTPSerializer,
         responses={200: dict, 400: dict, 429: dict},
         description=(
-            "Verify the password-reset OTP and return a short-lived "
-            "reset token."
+            "Verify the password-reset OTP and return a short-lived " "reset token."
         ),
     )
     def post(self, request):
