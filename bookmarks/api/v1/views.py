@@ -18,14 +18,10 @@ class BookmarkListCreateAPIView(generics.ListCreateAPIView):
         # Exclude bookmarks whose articles are not published.
         # select_related() fetches the related article efficiently
         # to reduce unnecessary database queries.
-        return (
-            Bookmark.objects
-            .filter(
-                user=self.request.user,
-                article__is_published=True,
-            )
-            .select_related("article")
-        )
+        return Bookmark.objects.filter(
+            user=self.request.user,
+            article__is_published=True,
+        ).select_related("article")
 
     def perform_create(self, serializer):
         # Automatically assign the logged-in user as the bookmark owner.
