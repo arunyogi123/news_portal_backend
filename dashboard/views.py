@@ -12,7 +12,6 @@ from rest_framework.views import APIView
 from categories.models import Category
 from news.models import Article
 
-
 User = get_user_model()
 
 

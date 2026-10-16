@@ -33,6 +33,7 @@ urlpatterns = [
     path("api/news/", include("news.api.v1.urls")),
     path("api/accounts/", include("accounts.api.v1.urls")),
     path("api/bookmarks/", include("bookmarks.api.v1.urls")),
+    path("api/dashboard/", include("dashboard.urls")),
     # OpenAPI schema
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     # Swagger documentation
