@@ -45,6 +45,8 @@ APPS = [
     "bookmarks",
     "categories",
     "news",
+    "dashboard",
+    
     # 3rd party app
     "rest_framework",
     "corsheaders",
