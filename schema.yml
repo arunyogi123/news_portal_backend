@@ -283,6 +283,63 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /api/bookmarks/:
+    get:
+      operationId: bookmarks_list
+      tags:
+      - bookmarks
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bookmark'
+          description: ''
+    post:
+      operationId: bookmarks_create
+      tags:
+      - bookmarks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bookmark'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Bookmark'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Bookmark'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bookmark'
+          description: ''
+  /api/bookmarks/{bookmark_id}/:
+    delete:
+      operationId: bookmarks_destroy
+      parameters:
+      - in: path
+        name: bookmark_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - bookmarks
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/categories/:
     get:
       operationId: categories_list
@@ -318,7 +375,6 @@ paths:
         required: true
       security:
       - jwtAuth: []
-      - {}
       responses:
         '201':
           content:
@@ -371,7 +427,6 @@ paths:
         required: true
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           content:
@@ -402,7 +457,6 @@ paths:
               $ref: '#/components/schemas/PatchedCategory'
       security:
       - jwtAuth: []
-      - {}
       responses:
         '200':
           content:
@@ -422,7 +476,6 @@ paths:
       - categories
       security:
       - jwtAuth: []
-      - {}
       responses:
         '204':
           description: No response body
@@ -846,6 +899,59 @@ components:
       - summary
       - title
       - updated_at
+    Bookmark:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        article:
+          allOf:
+          - $ref: '#/components/schemas/BookmarkedArticle'
+          readOnly: true
+        article_id:
+          type: integer
+          writeOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - article
+      - article_id
+      - created_at
+      - id
+    BookmarkedArticle:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          readOnly: true
+        slug:
+          type: string
+          readOnly: true
+          pattern: ^[-a-zA-Z0-9_]+$
+        summary:
+          type: string
+          readOnly: true
+        image:
+          type: string
+          format: uri
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - image
+      - slug
+      - summary
+      - title
     Category:
       type: object
       properties:
