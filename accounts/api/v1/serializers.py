@@ -73,8 +73,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "first_name",
             "last_name",
             "date_joined",
+            "is_staff",
+            "is_superuser",
         ]
-        read_only_fields = ["id", "username", "date_joined"]
+        read_only_fields = [
+            "id",
+            "username",
+            "date_joined",
+            "is_staff",
+            "is_superuser",
+        ]
 
     def validate_email(self, value):
         email = value.strip().lower()
@@ -87,6 +95,35 @@ class UserProfileSerializer(serializers.ModelSerializer):
                 "An account with this email already exists."
             )
         return email
+
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "is_staff",
+            "is_superuser",
+            "is_active",
+            "date_joined",
+            "last_login",
+        ]
+        read_only_fields = [
+            "id",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "is_staff",
+            "is_superuser",
+            "is_active",
+            "date_joined",
+            "last_login",
+        ]
 
 
 class ForgotPasswordSerializer(serializers.Serializer):
