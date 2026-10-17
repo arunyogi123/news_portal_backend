@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -19,6 +19,7 @@ from .serializers import (
     VerifyEmailSerializer,
     ResendOTPSerializer,
     UserProfileSerializer,
+    AdminUserSerializer,
     ForgotPasswordSerializer,
     VerifyPasswordResetOTPSerializer,
     ResetPasswordSerializer,
@@ -427,3 +428,13 @@ class UserProfileAPIView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+class AdminUserListAPIView(generics.ListAPIView):
+    """
+    Read-only user listing for staff members only.
+    """
+    queryset = User.objects.all().order_by("-date_joined")
+    serializer_class = AdminUserSerializer
+    permission_classes = [IsAdminUser]
+
