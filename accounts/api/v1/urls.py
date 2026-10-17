@@ -5,6 +5,7 @@ from .views import (
     VerifyEmailAPIView,
     ResendOTPAPIView,
     UserProfileAPIView,
+    AdminUserListAPIView,
     ForgotPasswordAPIView,
     VerifyPasswordResetOTPAPIView,
     ResetPasswordAPIView,
@@ -15,6 +16,7 @@ urlpatterns = [
     path("verify-email/", VerifyEmailAPIView.as_view(), name="verify-email"),
     path("resend-otp/", ResendOTPAPIView.as_view(), name="resend-otp"),
     path("me/", UserProfileAPIView.as_view(), name="my-profile"),
+    path("users/", AdminUserListAPIView.as_view(), name="admin-user-list"),
     path(
         "forgot-password/",
         ForgotPasswordAPIView.as_view(),
